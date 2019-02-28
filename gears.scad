@@ -152,7 +152,7 @@ module rack(modul, length, hoehe, width, pressure_angle = 20, schraegungswinkel 
     pressure_angle = Eingriffswinkel, Standardwert = 20° gemäß DIN 867. Sollte nicht größer als 45° sein.
     schraegungswinkel = Schrägungswinkel zur Rotationsachse; 0° = Geradverzahnung
     optimized = Löcher zur Material-/Gewichtsersparnis bzw. Oberflächenvergößerung erzeugen, wenn Geometrie erlaubt */
-module spur_gear(modul, tooth_number, width, bohrung, pressure_angle = 20, schraegungswinkel = 0, optimized = true) {
+module spur_gear(modul, tooth_number, width, bohrung, pressure_angle = 20, schraegungswinkel = 0, optimized = true, backlash=spiel) {
 
     // Dimensions-Berechnungen  
     d = modul * tooth_number;                                           // Teilkreisdurchmesser
@@ -182,13 +182,13 @@ module spur_gear(modul, tooth_number, width, bohrung, pressure_angle = 20, schra
 
     // Zeichnung
     union(){
-        rotate([0,0,-phi_r-90*(1-spiel)/tooth_number]){                     // Zahn auf x-Achse zentrieren;
+        rotate([0,0,-phi_r-90*(1-backlash)/tooth_number]){                     // Zahn auf x-Achse zentrieren;
                                                                         // macht Ausrichtung mit anderen Rädern einfacher
 
             linear_extrude(height = width, twist = gamma){
                 difference(){
                     union(){
-                        zahnbreite = (180*(1-spiel))/tooth_number+2*phi_r;
+                        zahnbreite = (180*(1-backlash))/tooth_number+2*phi_r;
                         circle(rf);                                     // Fußkreis 
                         for (rot = [0:tau:360]){
                             rotate (rot){                               // "Zahnzahl-mal" kopieren und drehen
@@ -686,6 +686,11 @@ module spiralkegelrad(modul, tooth_number, teilkegelwinkel, zahnbreite, bohrung,
     pressure_angle = Eingriffswinkel, Standardwert = 20° gemäß DIN 867. Sollte nicht größer als 45° sein.
     schraegungswinkel = Schrägungswinkel, Standardwert = 0°
     zusammen_gebaut = Komponenten zusammengebaut für Konstruktion oder auseinander zum 3D-Druck */
+module bevelPair(gear_module=1, teeth_spur=30, teeth_pinion=10, axesAngle=90, tooth_width=5, bore_spur=5, bore_pinion=5, pressure_angle=20, helix_angle=0, pair=1)
+{
+    bevel_gear_pair(modul=gear_module, zahnzahl_rad=teeth_spur, zahnzahl_ritzel=teeth_pinion, achsenwinkel=axesAngle, zahnbreite=tooth_width, bohrung_rad=bore_spur, bohrung_ritzel=bore_pinion, eingriffswinkel=pressure_angle, schraegungswinkel=helix_angle, zusammen_gebaut=pair);
+}
+
 module bevel_gear_pair(modul, zahnzahl_rad, zahnzahl_ritzel, achsenwinkel=90, zahnbreite, bohrung_rad, bohrung_ritzel, pressure_angle=20, schraegungswinkel=0, zusammen_gebaut=true){
  
     // Dimensions-Berechnungen
@@ -908,7 +913,7 @@ module worm_gear(modul, tooth_number, gangzahl, width, length, bohrung_schnecke,
 
 //ring_gear (modul=1, tooth_number=30, width=5, randbreite=3, pressure_angle=20, schraegungswinkel=20);
 
-// arrow_ring_gear (modul=1, tooth_number=30, width=5, randbreite=3, pressure_angle=20, schraegungswinkel=30);
+ //x  arrow_ring_gear (modul=1, tooth_number=30, width=5, randbreite=3, pressure_angle=20, schraegungswinkel=30);
 
 //planetary_gear(modul=1, zahnzahl_sonne=16, zahnzahl_planet=9, anzahl_planeten=5, width=5, randbreite=3, bohrung=4, pressure_angle=20, schraegungswinkel=30, zusammen_gebaut=true, optimized=true);
 
@@ -922,4 +927,31 @@ module worm_gear(modul, tooth_number, gangzahl, width, length, bohrung_schnecke,
 
 // worm(modul=1, gangzahl=2, length=15, bohrung=4, pressure_angle=20, steigungswinkel=10, zusammen_gebaut=true);
 
-worm_gear(modul=1, tooth_number=30, gangzahl=2, width=8, length=20, bohrung_schnecke=4, bohrung_rad=4, pressure_angle=20, steigungswinkel=10, optimized=1, zusammen_gebaut=1, show_spur=1, show_worm=1);
+//worm_gear(modul=1, tooth_number=30, gangzahl=2, width=8, length=20, bohrung_schnecke=4, bohrung_rad=4, pressure_angle=20, steigungswinkel=10, optimized=1, zusammen_gebaut=1, show_spur=1, show_worm=1);
+
+function gearsDist(mod,t1,t2) = ((t1+t2)*mod)/2;
+function outerDiam(mod,t) = (t+2)*mod;
+
+gearsModule = 1.25;
+t1 = 22;
+t2 = 13;
+t3 = 13;
+t4 = 22;
+pangle = 28;
+opt = false;
+bl = 0.0;
+spur_gear (modul=gearsModule, tooth_number=t1, width=5, bohrung=3, pressure_angle=pangle, schraegungswinkel=0, optimized=opt,backlash=bl);
+//cylinder(d=gearsModule*t1,h=1);
+translate([gearsDist(gearsModule,t1,t2),0,0]) rotate([0,0,180/t1]) spur_gear (modul=gearsModule, tooth_number=t2, width=5, bohrung=3, pressure_angle=pangle, schraegungswinkel=0, optimized=opt,backlash=bl);
+translate([gearsDist(gearsModule,t2,t3),0,0]) translate([gearsDist(gearsModule,t1,t2),0,0]) rotate([0,0,180/t1*2]) spur_gear (modul=gearsModule, tooth_number=t3, width=5, bohrung=3, pressure_angle=pangle, schraegungswinkel=0, optimized=opt,backlash=bl);
+translate([gearsDist(gearsModule,t3,t4),0,0]) translate([gearsDist(gearsModule,t2,t3),0,0]) translate([gearsDist(gearsModule,t1,t2),0,0]) rotate([0,0,180/t1]) spur_gear (modul=gearsModule, tooth_number=t4, width=5, bohrung=3, pressure_angle=pangle, schraegungswinkel=0, optimized=opt,backlash=bl);
+echo (gearsDist(gearsModule,t1,t2));
+echo (gearsDist(gearsModule,t2,t3));
+echo (gearsDist(gearsModule,t3,t4));
+echo (gearsDist(gearsModule,t1,t2)+gearsDist(gearsModule,t2,t3)+gearsDist(gearsModule,t3,t4));
+echo (outerDiam(gearsModule,t1),outerDiam(gearsModule,t2),outerDiam(gearsModule,t3),outerDiam(gearsModule,t4));
+
+
+
+
+
