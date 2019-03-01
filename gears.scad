@@ -932,26 +932,3 @@ module worm_gear(modul, tooth_number, gangzahl, width, length, bohrung_schnecke,
 function gearsDist(mod,t1,t2) = ((t1+t2)*mod)/2;
 function outerDiam(mod,t) = (t+2)*mod;
 
-gearsModule = 1.25;
-t1 = 22;
-t2 = 13;
-t3 = 13;
-t4 = 22;
-pangle = 28;
-opt = false;
-bl = 0.0;
-spur_gear (modul=gearsModule, tooth_number=t1, width=5, bohrung=3, pressure_angle=pangle, schraegungswinkel=0, optimized=opt,backlash=bl);
-//cylinder(d=gearsModule*t1,h=1);
-translate([gearsDist(gearsModule,t1,t2),0,0]) rotate([0,0,180/t1]) spur_gear (modul=gearsModule, tooth_number=t2, width=5, bohrung=3, pressure_angle=pangle, schraegungswinkel=0, optimized=opt,backlash=bl);
-translate([gearsDist(gearsModule,t2,t3),0,0]) translate([gearsDist(gearsModule,t1,t2),0,0]) rotate([0,0,180/t1*2]) spur_gear (modul=gearsModule, tooth_number=t3, width=5, bohrung=3, pressure_angle=pangle, schraegungswinkel=0, optimized=opt,backlash=bl);
-translate([gearsDist(gearsModule,t3,t4),0,0]) translate([gearsDist(gearsModule,t2,t3),0,0]) translate([gearsDist(gearsModule,t1,t2),0,0]) rotate([0,0,180/t1]) spur_gear (modul=gearsModule, tooth_number=t4, width=5, bohrung=3, pressure_angle=pangle, schraegungswinkel=0, optimized=opt,backlash=bl);
-echo (gearsDist(gearsModule,t1,t2));
-echo (gearsDist(gearsModule,t2,t3));
-echo (gearsDist(gearsModule,t3,t4));
-echo (gearsDist(gearsModule,t1,t2)+gearsDist(gearsModule,t2,t3)+gearsDist(gearsModule,t3,t4));
-echo (outerDiam(gearsModule,t1),outerDiam(gearsModule,t2),outerDiam(gearsModule,t3),outerDiam(gearsModule,t4));
-
-
-
-
-
